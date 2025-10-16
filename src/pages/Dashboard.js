@@ -21,6 +21,7 @@ const Dashboard = ({
       <ExpenseList 
         expenses={filteredExpenses} 
         onDeleteExpense={onDeleteExpense} 
+        filters={filters}
       />
     </div>
   );

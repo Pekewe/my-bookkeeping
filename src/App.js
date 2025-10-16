@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import Loading from './components/Loading';
+import Toast from './components/Toast';
 
 // 导入页面组件
 import Login from './pages/Login';
@@ -23,6 +25,13 @@ function App() {
     category: 'all',
     search: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+
+// Toast关闭函数
+const closeToast = () => {
+  setToast(null);
+};
 
   // 加载本地数据
   useEffect(() => {
@@ -34,8 +43,16 @@ function App() {
 
   // 登录
   const handleLogin = () => {
-    setUser(mockUser);
+    setLoading(true);
+    setTimeout(() => {
+      setUser(mockUser);
+      const saved = localStorage.getItem('expenses');
+      if (saved) setExpenses(JSON.parse(saved));
+      setLoading(false);
+    }, 1000);
   };
+
+
 
   // 退出
   const handleLogout = () => {
@@ -45,21 +62,33 @@ function App() {
 
   // 添加记账
   const addExpense = (expenseData) => {
-    const newExpense = {
-      id: Date.now(),
-      ...expenseData,
-      date: new Date().toLocaleDateString()
-    };
-    const newExpenses = [...expenses, newExpense];
-    setExpenses(newExpenses);
-    localStorage.setItem('expenses', JSON.stringify(newExpenses));
+    setLoading(true);
+    
+    setTimeout(() => {
+      const newExpense = {
+        id: Date.now(),
+        ...expenseData,
+        date: new Date().toLocaleDateString()
+      };
+      const newExpenses = [...expenses, newExpense];
+      setExpenses(newExpenses);
+      localStorage.setItem('expenses', JSON.stringify(newExpenses));
+      setLoading(false);
+      setToast({ message: '记账成功！', type: 'success' });
+    }, 500);
   };
 
   // 删除记账
   const deleteExpense = (id) => {
-    const newExpenses = expenses.filter(expense => expense.id !== id);
-    setExpenses(newExpenses);
-    localStorage.setItem('expenses', JSON.stringify(newExpenses));
+    setLoading(true);
+    
+    setTimeout(() => {
+      const newExpenses = expenses.filter(expense => expense.id !== id);
+      setExpenses(newExpenses);
+      localStorage.setItem('expenses', JSON.stringify(newExpenses));
+      setLoading(false);
+      setToast({ message: '删除成功！', type: 'success' });
+    }, 500);
   };
 
   // 过滤处理
@@ -81,6 +110,18 @@ function App() {
   return (
     <Router>
       <div className="App">
+        {/* 全局加载状态 - 放在最外层 */}
+        {loading && <Loading message="处理中..." />}
+        
+        {/* Toast提示 - 放在最外层 */}
+        {toast && (
+          <Toast 
+            message={toast.message} 
+            type={toast.type} 
+            onClose={closeToast} 
+          />
+        )}
+        
         <Routes>
           {/* 登录页 */}
           <Route 

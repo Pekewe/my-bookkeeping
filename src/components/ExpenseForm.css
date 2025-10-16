@@ -1,79 +1,345 @@
-/* src/components/ExpenseForm.css */
+/* 优化表单容器 */
 .expense-form {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #f9f9f9;
-  }
-  
-  .expense-form h3 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  
-  .form-group {
-    margin-bottom: 15px;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #555;
-  }
-  
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-  }
-  
-  .type-buttons {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .type-buttons button {
-    flex: 1;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s;
-  }
-  
-  .type-buttons button.active.expense {
-    border-color: #ff4d4f;
-    background: #fff2f0;
-    color: #ff4d4f;
-  }
-  
-  .type-buttons button.active.income {
-    border-color: #52c41a;
-    background: #f6ffed;
-    color: #52c41a;
-  }
-  
-  .submit-btn {
-    width: 100%;
-    padding: 12px;
-    background: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .submit-btn:hover {
-    background: #40a9ff;
-  }
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 24px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #fafafa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 优化所有输入框的盒模型 */
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box; /* 关键：防止溢出 */
+  transition: all 0.3s ease;
+  background: white;
+}
+
+/* 输入框聚焦效果 */
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* 特别优化金额输入框 */
+.form-group input[type="number"] {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  text-align: right;
+  font-size: 20px; /* 调大字体 */
+  font-weight: 600; /* 加粗 */
+  color: #1890ff; /* 强调色 */
+  border-color: #1890ff; /* 边框强调色 */
+  background: #f6ffed; /* 浅绿色背景，视觉刺激 */
+  padding: 16px 12px; /* 更大的内边距 */
+}
+
+/* 金额输入框聚焦效果 */
+.form-group input[type="number"]:focus {
+  border-color: #52c41a;
+  box-shadow: 0 0 0 3px rgba(82, 196, 26, 0.2);
+  background: #f6ffed;
+}
+
+/* 根据类型改变金额框颜色 */
+.form-group input[type="number"][data-type="income"] {
+  color: #52c41a; /* 收入用绿色 */
+  border-color: #52c41a;
+  background: #f6ffed;
+}
+
+.form-group input[type="number"][data-type="expense"] {
+  color: #ff4d4f; /* 支出用红色 */
+  border-color: #ff4d4f;
+  background: #fff2f0;
+}
+
+/* 备注输入框优化 */
+.form-group input[type="text"] {
+  font-size: 14px;
+  color: #333;
+}
+
+/* 快捷金额按钮优化 */
+.quick-amounts {
+  margin: 16px 0 24px 0;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.quick-amounts span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.amount-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.amount-btn {
+  padding: 10px 8px;
+  border: 2px solid #e8e8e8;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.amount-btn:hover:not(:disabled) {
+  border-color: #1890ff;
+  color: #1890ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 提交按钮优化 */
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #1890ff, #096dd9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+}
+
+.submit-btn:disabled {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 类型按钮样式优化 */
+.type-buttons {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.type-buttons button {
+  flex: 1;
+  padding: 14px 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.type-buttons button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.5s;
+}
+
+.type-buttons button:hover::before {
+  left: 100%;
+}
+
+.type-buttons button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 支出按钮激活状态 */
+.type-buttons button.active.expense {
+  border-color: #ff4d4f;
+  background: linear-gradient(135deg, #fff2f0, #ffccc7);
+  color: #ff4d4f;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.2);
+}
+
+/* 收入按钮激活状态 */
+.type-buttons button.active.income {
+  border-color: #52c41a;
+  background: linear-gradient(135deg, #f6ffed, #d9f7be);
+  color: #52c41a;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(82, 196, 26, 0.2);
+}
+
+/* 禁用状态 */
+.type-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.type-buttons button:disabled::before {
+  display: none;
+}
+
+/* 类型按钮的悬停效果 */
+.type-buttons button.expense:not(.active):not(:disabled):hover {
+  border-color: #ff7875;
+  color: #ff7875;
+}
+
+.type-buttons button.income:not(.active):not(:disabled):hover {
+  border-color: #73d13d;
+  color: #73d13d;
+}
+
+/* 点击动画效果 */
+.type-buttons button:active:not(:disabled) {
+  transform: scale(0.98);
+  transition: transform 0.1s;
+}
+
+/* 快捷分类样式 */
+.quick-categories {
+  margin: 20px 0;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.quick-categories span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.category-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.category-btn {
+  padding: 12px 8px;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.category-btn:hover:not(:disabled) {
+  border-color: #1890ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.category-icon {
+  font-size: 20px;
+}
+
+.category-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.category-amount {
+  font-size: 11px;
+  color: #666;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+/* 当前选中的分类高亮 */
+.category-btn[data-selected="true"] {
+  border-color: #1890ff;
+  background: #f0f8ff;
+  color: #1890ff;
+}
+
+.category-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 快捷备注样式 */
+.quick-notes {
+  margin: 16px 0 24px 0;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+}
+
+.quick-notes span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.note-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.note-btn {
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 16px;
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.note-btn:hover:not(:disabled) {
+  border-color: #1890ff;
+  color: #1890ff;
+  background: #f0f8ff;
+}
+
+.note-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

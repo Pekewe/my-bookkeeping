@@ -96,3 +96,20 @@
   .delete-btn:hover {
     background: #ff7875;
   }
+
+/* 禁用状态样式 */
+.submit-btn:disabled,
+.form-group input:disabled,
+.form-group select:disabled,
+.type-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+}
+
+.submit-btn:disabled:hover {
+  background: #ccc;
+}
