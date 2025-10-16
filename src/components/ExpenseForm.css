@@ -1,0 +1,79 @@
+/* src/components/ExpenseForm.css */
+.expense-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+  }
+  
+  .expense-form h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .type-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .type-buttons button {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+  }
+  
+  .type-buttons button.active.expense {
+    border-color: #ff4d4f;
+    background: #fff2f0;
+    color: #ff4d4f;
+  }
+  
+  .type-buttons button.active.income {
+    border-color: #52c41a;
+    background: #f6ffed;
+    color: #52c41a;
+  }
+  
+  .submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .submit-btn:hover {
+    background: #40a9ff;
+  }

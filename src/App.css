@@ -1,0 +1,48 @@
+/* src/App.css */
+.login-page {
+  text-align: center;
+  padding: 50px;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.app-header {
+  background: #1890ff;
+  color: white;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-nav {
+  background: #f5f5f5;
+  padding: 10px 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.app-nav button {
+  margin-right: 15px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.app-nav button.active {
+  background: #1890ff;
+  color: white;
+  border-radius: 4px;
+}
+
+.app-main {
+  padding: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

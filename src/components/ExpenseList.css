@@ -1,0 +1,98 @@
+/* src/components/ExpenseList.css */
+.expense-list {
+    margin-top: 20px;
+  }
+  
+  .expense-list.empty {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    background: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  .expense-list h3 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .expense-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    background: white;
+    transition: box-shadow 0.3s;
+  }
+  
+  .expense-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .expense-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .category {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .date {
+    font-size: 12px;
+    color: #999;
+  }
+  
+  .expense-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+  }
+  
+  .amount {
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .amount.expense {
+    color: #ff4d4f;
+  }
+  
+  .amount.income {
+    color: #52c41a;
+  }
+  
+  .note {
+    font-size: 12px;
+    color: #666;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .delete-btn {
+    padding: 6px 12px;
+    background: #ff4d4f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+  }
+  
+  .delete-btn:hover {
+    background: #ff7875;
+  }
