@@ -21,3 +21,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# 后端依赖
+backend/node_modules/
+
+# 数据库文件
+database.sqlite
+database.sqlite-journal
