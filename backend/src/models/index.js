@@ -11,7 +11,19 @@ const sequelize = new Sequelize({
   logging: dbConfig.logging,
 });
 
-// 测试数据库连接
+// 导入模型定义函数
+const ExpenseDefinition = require('./Expense');
+const UserDefinition = require('./User');
+
+// 初始化模型
+const Expense = ExpenseDefinition(sequelize);
+const User = UserDefinition(sequelize);
+
+// 定义模型关系
+User.hasMany(Expense, { foreignKey: 'userId', onDelete: 'CASCADE' });
+Expense.belongsTo(User, { foreignKey: 'userId' });
+
+// 测试连接和同步
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
@@ -21,32 +33,22 @@ const testConnection = async () => {
   }
 };
 
-testConnection();
-
-module.exports = { sequelize, Sequelize };
-
-// 导入所有模型
-const Expense = require('./Expense');
-
-// 初始化模型
-const models = {
-  Expense,
-};
-
-// 同步数据库（创建表）
 const syncDatabase = async () => {
   try {
-    await sequelize.sync({ force: false }); // force: true 会删除现有表
+    // 恢复为正常模式，不删除现有数据
+    await sequelize.sync({ force: false });
     console.log('✅ 数据库表同步成功');
   } catch (error) {
     console.error('❌ 数据库表同步失败:', error);
   }
 };
 
+testConnection();
 syncDatabase();
 
 module.exports = {
   sequelize,
   Sequelize,
-  ...models,
+  Expense,
+  User,
 };

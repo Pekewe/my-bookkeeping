@@ -11,10 +11,46 @@
     border-radius: 8px;
   }
   
-  .expense-list h3 {
-    margin-bottom: 15px;
-    color: #333;
-  }
+  .expense-list .list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.expense-list h3 {
+  margin: 0;
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* 排序选项样式 */
+.sort-options {
+  display: flex;
+  align-items: center;
+}
+
+.sort-select {
+  padding: 8px 12px;
+  border: 2px solid #e8e8e8;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.sort-select:hover {
+  border-color: #1890ff;
+}
   
   .expense-items {
     display: flex;

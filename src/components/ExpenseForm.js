@@ -1,17 +1,24 @@
 // src/components/ExpenseForm.js
 import React, { useState } from 'react';
 import './ExpenseForm.css';
+import Toast from './Toast'; // 引入Toast组件用于显示错误和成功提示
 
 const ExpenseForm = ({ onAddExpense }) => {
   const [formData, setFormData] = useState({
     amount: '',
     type: 'expense',
     category: '食品',
-    note: ''
+    note: '',
+    date: new Date().toISOString().split('T')[0] // 添加日期字段，默认为今天
   });
   
   // 新增：提交状态
   const [submitting, setSubmitting] = useState(false);
+  
+  // 新增：错误提示状态
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState('error'); // error 或 success
 
   const categories = {
     expense: ['食品', '交通', '娱乐', '购物', '医疗', '房租', '水电费', '其他'],
@@ -36,39 +43,66 @@ const quickCategories = {
 };
 
 
+  // 显示提示消息
+  const showMessage = (message, type = 'error') => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+    
+    // 3秒后自动关闭
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // 表单验证
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      alert('请输入有效的金额');
+      showMessage('请输入有效的金额');
       return;
     }
 
     if (formData.amount > 1000000) {
-      alert('金额过大，请检查输入');
+      showMessage('金额过大，请检查输入');
+      return;
+    }
+
+    // 确保日期有效
+    if (!formData.date) {
+      showMessage('请选择日期');
       return;
     }
 
     // 设置提交状态
     setSubmitting(true);
 
-    // 模拟异步操作，让用户看到提交状态
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    onAddExpense({
-      ...formData,
-      amount: parseFloat(formData.amount)
-    });
+    try {
+      // 调用父组件传递的函数添加记账记录
+      const result = await onAddExpense({
+        ...formData,
+        amount: parseFloat(formData.amount)
+      });
+      
+      // 显示成功提示
+      showMessage('记账成功！', 'success');
 
-    // 重置表单和提交状态
-    setFormData({
-      amount: '',
-      type: 'expense',
-      category: '食品',
-      note: ''
-    });
-    
-    setSubmitting(false);
+      // 重置表单
+      setFormData({
+        amount: '',
+        type: 'expense',
+        category: '食品',
+        note: '',
+        date: new Date().toISOString().split('T')[0]
+      });
+    } catch (error) {
+      console.error('添加记账失败:', error);
+      showMessage('添加记账失败，请重试');
+    } finally {
+      // 无论成功失败都重置提交状态
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -88,7 +122,8 @@ const quickCategories = {
   };
 
   return (
-    <form className="expense-form" onSubmit={handleSubmit}>
+    <div className="expense-form-container">
+      <form className="expense-form" onSubmit={handleSubmit}>
       <h3>添加记账记录</h3>
       
       <div className="form-group">
@@ -137,6 +172,19 @@ const quickCategories = {
     min="0"
     step="0.01"
     disabled={submitting}
+    aria-label="金额输入"
+  />
+</div>
+
+<div className="form-group">
+  <label>日期：</label>
+  <input
+    type="date"
+    value={formData.date}
+    onChange={(e) => handleChange('date', e.target.value)}
+    disabled={submitting}
+    max={new Date().toISOString().split('T')[0]} // 限制最大日期为今天
+    aria-label="日期选择"
   />
 </div>
 
@@ -233,11 +281,19 @@ const quickCategories = {
       <button 
         type="submit" 
         className="submit-btn"
-        disabled={submitting}
+        disabled={submitting || !formData.amount || parseFloat(formData.amount) <= 0}
+        aria-disabled={submitting || !formData.amount || parseFloat(formData.amount) <= 0}
       >
         {submitting ? '提交中...' : '确认记账'}
       </button>
     </form>
+    <Toast 
+      show={showToast} 
+      message={toastMessage} 
+      type={toastType} 
+      onClose={() => setShowToast(false)} 
+    />
+    </div>
   );
 };
 

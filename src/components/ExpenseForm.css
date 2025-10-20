@@ -68,6 +68,30 @@
   color: #333;
 }
 
+/* 日期输入框样式优化 */
+.form-group input[type="date"] {
+  font-size: 14px;
+  color: #333;
+  padding: 12px 16px;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-group input[type="date"]:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.form-group input[type="date"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+
 /* 快捷金额按钮优化 */
 .quick-amounts {
   margin: 16px 0 24px 0;

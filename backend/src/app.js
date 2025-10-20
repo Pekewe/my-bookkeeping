@@ -3,10 +3,204 @@ const cors = require('cors');
 const app = express();
 // 新增：导入数据库模型
 const { sequelize, Expense } = require('./models');
+// 导入认证工具
+const { authenticate, generateToken } = require('./utils/auth');
+const { User } = require('./models');
+
+const { Op } = require('sequelize');
 
 // 中间件
-app.use(cors());
+// 修改cors配置，允许来自3000端口的请求
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+// ==================== 认证路由 ====================
+
+// 用户注册
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { username, email, password, name } = req.body;
+
+    // 基础验证
+    if (!username || !email || !password || !name) {
+      return res.status(400).json({
+        success: false,
+        message: '所有字段都是必填的'
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: '密码长度至少6位'
+      });
+    }
+
+    // 检查用户是否已存在
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { username }]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: '用户名或邮箱已存在'
+      });
+    }
+
+    // 创建用户
+    const user = await User.create({
+      username,
+      email,
+      password,
+      name
+    });
+
+    // 生成token
+    const token = generateToken(user.id);
+
+    res.status(201).json({
+      success: true,
+      message: '注册成功',
+      data: {
+        user: user.toSafeObject(),
+        token
+      }
+    });
+
+  } catch (error) {
+    console.error('注册失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '注册失败'
+    });
+  }
+});
+
+// 用户登录
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { login, password } = req.body; // login可以是username或email
+
+    if (!login || !password) {
+      return res.status(400).json({
+        success: false,
+        message: '用户名/邮箱和密码是必填的'
+      });
+    }
+
+    // 查找用户（支持用户名或邮箱登录）
+    const user = await User.findOne({
+      where: {
+        [Op.or]: [
+          { username: login },
+          { email: login }
+        ]
+      }
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: '用户不存在'
+      });
+    }
+
+    // 验证密码
+    const isValidPassword = await user.validatePassword(password);
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        message: '密码错误'
+      });
+    }
+
+    // 生成token
+    const token = generateToken(user.id);
+
+    res.json({
+      success: true,
+      message: '登录成功',
+      data: {
+        user: user.toSafeObject(),
+        token
+      }
+    });
+
+  } catch (error) {
+    console.error('登录失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '登录失败'
+    });
+  }
+});
+
+// 调试端点：检查token
+app.get('/api/auth/debug-token', authenticate, (req, res) => {
+  res.json({
+    success: true,
+    message: 'Token验证成功',
+    userId: req.userId
+  });
+});
+
+// 获取当前用户信息
+app.get('/api/auth/me', authenticate, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId, {
+      attributes: { exclude: ['password'] }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: '用户不存在'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: user
+    });
+
+  } catch (error) {
+    console.error('获取用户信息失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取用户信息失败'
+    });
+  }
+});
+
+// 临时测试：跳过认证
+// app.get('/api/auth/me', async (req, res) => {
+//   try {
+//     console.log('直接访问/me端点，头信息:', req.headers);
+    
+//     // 临时返回成功，确认端点可访问
+//     res.json({
+//       success: true,
+//       message: '端点可访问',
+//       headers: req.headers
+//     });
+    
+//   } catch (error) {
+//     console.error('获取用户信息失败:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: '获取用户信息失败'
+//     });
+//   }
+// });
+
 
 // 在现有路由后面添加数据库健康检查
 app.get('/api/db-health', async (req, res) => {
@@ -74,13 +268,15 @@ app.get('/api/db-health', async (req, res) => {
 //   });
 // });
 
-// 改为数据库版本
-app.get('/api/expenses', async (req, res) => {
+// 改为数据库版本 - 添加认证中间件
+app.get('/api/expenses', authenticate, async (req, res) => {
   try {
     const { type, category } = req.query;
     
     // 构建查询条件
-    const where = {};
+    const where = {
+      userId: req.userId // 只返回当前用户的记录
+    };
     if (type && type !== 'all') {
       where.type = type;
     }
@@ -109,17 +305,19 @@ app.get('/api/expenses', async (req, res) => {
   }
 });
 
-// 开发用：查看所有数据（完成后可删除）
-app.get('/api/debug/expenses', async (req, res) => {
+// 开发用：查看当前用户的所有数据
+app.get('/api/debug/expenses', authenticate, async (req, res) => {
   try {
     const expenses = await Expense.findAll({
+      where: { userId: req.userId }, // 只查看当前用户的数据
       order: [['createdAt', 'DESC']]
     });
     
     res.json({
       success: true,
       data: expenses,
-      total: expenses.length
+      total: expenses.length,
+      userId: req.userId
     });
   } catch (error) {
     res.status(500).json({
@@ -167,8 +365,8 @@ app.get('/api/debug/expenses', async (req, res) => {
 //   });
 // });
 
-//改为数据库版本
-app.post('/api/expenses', async (req, res) => {
+//改为数据库版本 - 添加认证中间件和用户关联
+app.post('/api/expenses', authenticate, async (req, res) => {
   try {
     const { amount, type, category, note, date } = req.body;
     
@@ -187,13 +385,14 @@ app.post('/api/expenses', async (req, res) => {
       });
     }
     
-    // 创建数据库记录
+    // 创建数据库记录 - 添加userId关联
     const newExpense = await Expense.create({
       amount: parseFloat(amount),
       type,
       category,
       note: note || '',
-      date: date || new Date().toISOString().split('T')[0]
+      date: date || new Date().toISOString().split('T')[0],
+      userId: req.userId // 关联到当前用户
     });
     
     res.status(201).json({
@@ -211,34 +410,60 @@ app.post('/api/expenses', async (req, res) => {
   }
 });
 
-// 路由 - 更新记账记录
-app.put('/api/expenses/:id', (req, res) => {
-  const { id } = req.params;
-  const { amount, type, category, note, date } = req.body;
-  
-  const expenseIndex = expenses.findIndex(expense => expense.id === parseInt(id));
-  
-  if (expenseIndex === -1) {
-    return res.status(404).json({
+// 路由 - 更新记账记录 - 改为数据库版本并添加认证中间件
+app.put('/api/expenses/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, type, category, note, date } = req.body;
+    
+    // 查找记录并验证所有权
+    const expense = await Expense.findOne({
+      where: {
+        id,
+        userId: req.userId // 确保只更新当前用户的记录
+      }
+    });
+    
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: '记录不存在或无权操作'
+      });
+    }
+    
+    // 验证（如果提供了金额）
+    if (amount !== undefined) {
+      if (amount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: '金额必须大于0'
+        });
+      }
+    }
+    
+    // 更新记录
+    const updatedFields = {};
+    if (amount !== undefined) updatedFields.amount = parseFloat(amount);
+    if (type !== undefined) updatedFields.type = type;
+    if (category !== undefined) updatedFields.category = category;
+    if (note !== undefined) updatedFields.note = note;
+    if (date !== undefined) updatedFields.date = date;
+    
+    await expense.update(updatedFields);
+    
+    res.json({
+      success: true,
+      message: '更新成功',
+      data: expense
+    });
+    
+  } catch (error) {
+    console.error('更新记账失败:', error);
+    res.status(500).json({
       success: false,
-      message: '记录不存在'
+      message: '更新失败'
     });
   }
-  
-  expenses[expenseIndex] = {
-    ...expenses[expenseIndex],
-    amount: amount ? parseFloat(amount) : expenses[expenseIndex].amount,
-    type: type || expenses[expenseIndex].type,
-    category: category || expenses[expenseIndex].category,
-    note: note !== undefined ? note : expenses[expenseIndex].note,
-    date: date || expenses[expenseIndex].date
-  };
-  
-  res.json({
-    success: true,
-    message: '更新成功',
-    data: expenses[expenseIndex]
-  });
 });
 
 // 路由 - 删除记账记录
@@ -262,17 +487,23 @@ app.put('/api/expenses/:id', (req, res) => {
 //   });
 // });
 
-//改为数据库版本
-app.delete('/api/expenses/:id', async (req, res) => {
+//改为数据库版本 - 添加认证中间件和权限验证
+app.delete('/api/expenses/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     
-    // 查找记录是否存在
-    const expense = await Expense.findByPk(id);
+    // 查找记录并验证所有权
+    const expense = await Expense.findOne({
+      where: {
+        id,
+        userId: req.userId // 确保只删除当前用户的记录
+      }
+    });
+    
     if (!expense) {
       return res.status(404).json({
         success: false,
-        message: '记录不存在'
+        message: '记录不存在或无权操作'
       });
     }
     

@@ -1,12 +1,19 @@
 // backend/src/models/Expense.js
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('./index');
-
+module.exports = (sequelize) => {
 const Expense = sequelize.define('Expense', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
   },
   amount: {
     type: DataTypes.DECIMAL(10, 2),
@@ -37,4 +44,5 @@ const Expense = sequelize.define('Expense', {
   timestamps: true, // 自动添加 createdAt 和 updatedAt
 });
 
-module.exports = Expense;
+return Expense;
+};

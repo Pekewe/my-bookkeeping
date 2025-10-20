@@ -68,3 +68,71 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+```
+my-bookkeeping
+├─ backend
+│  ├─ config
+│  │  └─ database.js
+│  ├─ package-lock.json
+│  ├─ package.json
+│  └─ src
+│     ├─ app.js
+│     ├─ models
+│     │  ├─ Expense.js
+│     │  ├─ index.js
+│     │  └─ User.js
+│     └─ utils
+│        └─ auth.js
+├─ package-lock.json
+├─ package.json
+├─ public
+│  ├─ favicon.ico
+│  ├─ index.html
+│  ├─ logo192.png
+│  ├─ logo512.png
+│  ├─ manifest.json
+│  └─ robots.txt
+├─ README.md
+└─ src
+   ├─ App.css
+   ├─ App.js
+   ├─ App.test.js
+   ├─ components
+   │  ├─ ConfirmDialog.css
+   │  ├─ ConfirmDialog.js
+   │  ├─ EmptyState.css
+   │  ├─ EmptyState.js
+   │  ├─ ExpenseFilter.css
+   │  ├─ ExpenseFilter.js
+   │  ├─ ExpenseForm.css
+   │  ├─ ExpenseForm.js
+   │  ├─ ExpenseList.css
+   │  ├─ ExpenseList.js
+   │  ├─ ExpenseSummary.css
+   │  ├─ ExpenseSummary.js
+   │  ├─ Layout.css
+   │  ├─ Layout.js
+   │  ├─ Loading.css
+   │  ├─ Loading.js
+   │  ├─ Toast.css
+   │  └─ Toast.js
+   ├─ contexts
+   │  └─ AuthContext.js
+   ├─ hooks
+   ├─ index.css
+   ├─ index.js
+   ├─ logo.svg
+   ├─ pages
+   │  ├─ Dashboard.css
+   │  ├─ Dashboard.js
+   │  ├─ ExpensePage.css
+   │  ├─ ExpensePage.js
+   │  ├─ Login.css
+   │  └─ Login.js
+   ├─ reportWebVitals.js
+   ├─ setupTests.js
+   └─ utils
+      └─ api.js
+
+```

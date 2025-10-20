@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import './App.css';
 import Loading from './components/Loading';
 import Toast from './components/Toast';
-import { expenseAPI, healthCheck } from './utils/api.js';
+import { expenseAPI } from './utils/api.js';
+import { useAuth } from './contexts/AuthContext'; // 合并导入
 
 // 导入页面组件
 import Login from './pages/Login';
@@ -12,169 +13,137 @@ import Dashboard from './pages/Dashboard';
 import ExpensePage from './pages/ExpensePage';
 import Layout from './components/Layout';
 
-// 模拟用户
-const mockUser = {
-  id: 1,
-  name: '测试用户'
-};
-
 function App() {
-  const [user, setUser] = useState(null);
+  // 使用认证上下文
+  const { user, loading: authLoading } = useAuth();
+  
   const [expenses, setExpenses] = useState([]);
+  // 初始过滤条件
   const [filters, setFilters] = useState({
     type: 'all',
     category: 'all',
-    search: ''
+    search: '',
+    dateRange: { start: '', end: '' }
   });
-  const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
-// 新增：数据加载函数
-const loadExpenses = async () => {
-  try {
-    setLoading(true);
-    //console.log('正在从API加载数据...');
-    const result = await expenseAPI.getExpenses();
-    setExpenses(result.data);
-    //console.log('数据加载成功，共', result.data.length, '条记录');
-  } catch (error) {
-    console.error('加载数据失败:', error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-// Toast关闭函数
-const closeToast = () => {
-  setToast(null);
-};
-
-  // 加载本地数据
-  // useEffect(() => {
-  //   if (user) {
-  //     const saved = localStorage.getItem('expenses');
-  //     if (saved) setExpenses(JSON.parse(saved));
-  //   }
-  // }, [user]);
-
-  // 登录
-  // 修改后的登录函数
-  const handleLogin = async () => {
-    setUser(mockUser);
-    await loadExpenses();// 只保留API加载
+  // 数据加载函数
+  const loadExpenses = async () => {
+    try {
+      setDataLoading(true);
+      const result = await expenseAPI.getExpenses();
+      setExpenses(result.data);
+    } catch (error) {
+      console.error('加载数据失败:', error);
+    } finally {
+      setDataLoading(false);
+    }
   };
 
-  // 新增：用户登录时自动加载数据
+  // Toast关闭函数
+  const closeToast = () => {
+    setToast(null);
+  };
+
+  // 用户登录时自动加载数据
   useEffect(() => {
     if (user) {
       loadExpenses();
     }
   }, [user]);
 
-
-
-  // 退出
-  const handleLogout = () => {
-    setUser(null);
-    setExpenses([]);
-  };
+  // 删除handleLogout函数 - Layout现在使用认证上下文的logout
 
   // 添加记账
-// 修改后的添加记账函数
-const addExpense = async (expenseData) => {
-  try {
-    setLoading(true);
-    //console.log('正在提交记账数据...', expenseData);
-    
-    // 调用API添加数据
-    const result = await expenseAPI.addExpense(expenseData);
-    
-    // API返回的数据已经包含id和createdAt
-    const newExpense = result.data;
-    
-    // 更新本地状态
-    setExpenses(prev => [...prev, newExpense]);
-    
-    // 显示成功提示
-    setToast({ message: '记账成功！', type: 'success' });
-    
-    console.log('记账成功:', newExpense);
-    
-  } catch (error) {
-    console.error('添加记账失败:', error);
-    setToast({ message: `添加失败: ${error.message}`, type: 'error' });
-  } finally {
-    setLoading(false);
-  }
-};
+  const addExpense = async (expenseData) => {
+    try {
+      setDataLoading(true);
+      const result = await expenseAPI.addExpense(expenseData);
+      const newExpense = result.data;
+      setExpenses(prev => [...prev, newExpense]);
+      setToast({ message: '记账成功！', type: 'success' });
+    } catch (error) {
+      console.error('添加记账失败:', error);
+      setToast({ message: `添加失败: ${error.message}`, type: 'error' });
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   // 删除记账
-// 修改后的删除记账函数
-const deleteExpense = async (id) => {
-  try {
-    setLoading(true);
-    //console.log('正在删除记录:', id);
-    
-    // 调用API删除数据
-    await expenseAPI.deleteExpense(id);
-    
-    // 更新本地状态
-    setExpenses(prev => prev.filter(expense => expense.id !== id));
-    
-    // 显示成功提示
-    setToast({ message: '删除成功！', type: 'success' });
-    
-    console.log('删除成功:', id);
-    
-  } catch (error) {
-    console.error('删除记账失败:', error);
-    setToast({ message: `删除失败: ${error.message}`, type: 'error' });
-    
-    // 如果API删除失败，重新加载数据确保同步
-    await loadExpenses();
-  } finally {
-    setLoading(false);
-  }
-};
+  const deleteExpense = async (id) => {
+    try {
+      setDataLoading(true);
+      await expenseAPI.deleteExpense(id);
+      setExpenses(prev => prev.filter(expense => expense.id !== id));
+      setToast({ message: '删除成功！', type: 'success' });
+    } catch (error) {
+      console.error('删除记账失败:', error);
+      setToast({ message: `删除失败: ${error.message}`, type: 'error' });
+      await loadExpenses();
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   // 过滤处理
   const handleFilterChange = (field, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    if (field === 'reset') {
+      // 重置所有过滤条件
+      setFilters({
+        type: 'all',
+        category: 'all',
+        search: '',
+        dateRange: { start: '', end: '' }
+      });
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
 
   // 过滤后的数据
   const filteredExpenses = expenses.filter(expense => {
+    // 类型过滤
     if (filters.type !== 'all' && expense.type !== filters.type) return false;
+    
+    // 分类过滤
     if (filters.category !== 'all' && expense.category !== filters.category) return false;
-    if (filters.search && !expense.note.includes(filters.search)) return false;
+    
+    // 搜索过滤
+    if (filters.search && !expense.note?.toLowerCase().includes(filters.search.toLowerCase())) return false;
+    
+    // 日期范围过滤
+    if (filters.dateRange?.start && new Date(expense.date) < new Date(filters.dateRange.start)) {
+      return false;
+    }
+    if (filters.dateRange?.end) {
+      // 确保结束日期包含当天的所有记录
+      const endDate = new Date(filters.dateRange.end);
+      endDate.setHours(23, 59, 59, 999);
+      if (new Date(expense.date) > endDate) {
+        return false;
+      }
+    }
+    
     return true;
   });
 
-  // 在App组件中添加测试效果
-// useEffect(() => {
-//   const testConnection = async () => {
-//     try {
-//       console.log('测试API连接...');
-//       const health = await healthCheck();
-//       console.log('后端服务状态:', health);
-//     } catch (error) {
-//       console.error('API连接失败:', error);
-//     }
-//   };
-  
-//   testConnection();
-// }, []);
+  // if (authLoading && !user && !localStorage.getItem('token')) {
+  //   return <div>应用初始化中...</div>;
+  // }
 
   return (
+    // 删除外层的AuthProvider - 已经在index.js中包装了
     <Router>
       <div className="App">
-        {/* 全局加载状态 - 放在最外层 */}
-        {loading && <Loading message="处理中..." />}
+        {/* 全局加载状态 */}
+        {dataLoading && <Loading message="处理中..." />}
         
-        {/* Toast提示 - 放在最外层 */}
+        {/* Toast提示 */}
         {toast && (
           <Toast 
             message={toast.message} 
@@ -188,7 +157,7 @@ const deleteExpense = async (id) => {
           <Route 
             path="/login" 
             element={
-              user ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
+              user ? <Navigate to="/dashboard" replace /> : <Login />
             } 
           />
           
@@ -197,7 +166,8 @@ const deleteExpense = async (id) => {
             path="/*" 
             element={
               user ? (
-                <Layout user={user} onLogout={handleLogout}>
+                // 修改：Layout不需要传递props
+                <Layout>
                   <Routes>
                     <Route 
                       path="/dashboard" 
@@ -229,4 +199,5 @@ const deleteExpense = async (id) => {
   );
 }
 
+// 在index.js中包装AuthProvider
 export default App;
