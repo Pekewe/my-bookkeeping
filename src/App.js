@@ -95,7 +95,8 @@ function App() {
         type: 'all',
         category: 'all',
         search: '',
-        dateRange: { start: '', end: '' }
+        dateRange: { start: '', end: '' },
+        quickDate: 'custom'
       });
     } else {
       setFilters(prev => ({

@@ -20,11 +20,20 @@
   }
   
   .filter-controls select,
-  .filter-controls input {
+.filter-controls input,
+.filter-controls .quick-date-select {
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+    background: white;
+    cursor: pointer;
+  }
+  
+  .filter-controls .quick-date-select:focus {
+    outline: none;
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
   }
   
   .filter-controls input {
